@@ -28,9 +28,9 @@ pub enum Expression {
 }
 
 #[cfg(feature = "kube-rs")]
-impl Into<kube::core::Expression> for Expression {
-    fn into(self) -> kube::core::Expression {
-        match self {
+impl From<Expression> for kube::core::Expression {
+    fn from(val: Expression) -> Self {
+        match val {
             Expression::In(key, btree_set) => kube::core::Expression::In(key, btree_set),
             Expression::NotIn(key, btree_set) => kube::core::Expression::NotIn(key, btree_set),
             Expression::Equal(key, value) => kube::core::Expression::Equal(key, value),
@@ -38,6 +38,24 @@ impl Into<kube::core::Expression> for Expression {
             Expression::Exists(key) => kube::core::Expression::Exists(key),
             Expression::DoesNotExist(key) => kube::core::Expression::DoesNotExist(key),
         }
+    }
+}
+
+#[cfg(feature = "kube-rs")]
+impl From<Expressions> for kube::core::Selector {
+    fn from(val: Expressions) -> Self {
+        val.into_iter()
+            .map(|ParsedExpression::Expression(e)| kube::core::Expression::from(e))
+            .collect()
+    }
+}
+
+impl IntoIterator for Expression {
+    type IntoIter = std::option::IntoIter<Self::Item>;
+    type Item = Self;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Some(self).into_iter()
     }
 }
 

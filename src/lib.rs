@@ -4,7 +4,6 @@ use logos::{Lexer, Logos, Span};
 use serde::{Deserialize, Serialize};
 
 use thiserror::Error;
-use tracing::instrument;
 
 /// A selector expression with existing operations
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -78,7 +77,6 @@ pub enum ParsedExpression {
 impl TryFrom<String> for Expressions {
     type Error = ParseError;
 
-    #[instrument(err)]
     fn try_from(selector: String) -> Result<Self> {
         let mut lexer = ParsedExpression::lexer(selector.as_str());
         let mut expressions = vec![];

@@ -28,6 +28,20 @@ pub enum Expression {
     DoesNotExist(String),
 }
 
+#[cfg(feature = "kube-rs")]
+impl Into<kube::core::Expression> for Expression {
+    fn into(self) -> kube::core::Expression {
+        match self {
+            Expression::In(key, btree_set) => kube::core::Expression::In(key, btree_set),
+            Expression::NotIn(key, btree_set) => kube::core::Expression::NotIn(key, btree_set),
+            Expression::Equal(key, value) => kube::core::Expression::Equal(key, value),
+            Expression::NotEqual(key, value) => kube::core::Expression::NotEqual(key, value),
+            Expression::Exists(key) => kube::core::Expression::Exists(key),
+            Expression::DoesNotExist(key) => kube::core::Expression::DoesNotExist(key),
+        }
+    }
+}
+
 /// Indicates failure of conversion to Expression
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum ParseError {

@@ -2,6 +2,12 @@
 name = "unselector"
 version = "0.1.0"
 edition = "2024"
+description = "A parser for Kubernetes label selectors."
+readme = "README.md"
+repository = "https://github.com/crust-gather/unselector"
+license = "Apache-2.0"
+keywords = ["kubernetes", "selector", "parser", "k8s"]
+categories = ["parsing"]
 
 [dependencies]
 logos = "0.16.1"

@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::fmt;
 
 use logos::{Lexer, Logos, Span};
 use serde::{Deserialize, Serialize};
@@ -59,6 +60,25 @@ impl IntoIterator for Expression {
     }
 }
 
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Expression::In(key, values) => {
+                let vals: Vec<&str> = values.iter().map(String::as_str).collect();
+                write!(f, "{} in ({})", key, vals.join(","))
+            }
+            Expression::NotIn(key, values) => {
+                let vals: Vec<&str> = values.iter().map(String::as_str).collect();
+                write!(f, "{} notin ({})", key, vals.join(","))
+            }
+            Expression::Equal(key, val) => write!(f, "{}={}", key, val),
+            Expression::NotEqual(key, val) => write!(f, "{}!={}", key, val),
+            Expression::Exists(key) => write!(f, "{}", key),
+            Expression::DoesNotExist(key) => write!(f, "!{}", key),
+        }
+    }
+}
+
 /// Indicates failure of conversion to Expression
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum ParseError {
@@ -68,6 +88,7 @@ pub enum ParseError {
 
 type Result<T> = std::result::Result<T, ParseError>;
 
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Expressions(Vec<ParsedExpression>);
 
 impl IntoIterator for Expressions {
@@ -79,7 +100,29 @@ impl IntoIterator for Expressions {
     }
 }
 
-#[derive(Logos, Debug, PartialEq)]
+impl fmt::Display for Expressions {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let exprs: Vec<String> = self.0.iter().map(|e| e.to_string()).collect();
+        write!(f, "{}", exprs.join(","))
+    }
+}
+
+impl std::ops::Deref for Expressions {
+    type Target = Vec<ParsedExpression>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[cfg(feature = "deref_mut")]
+impl std::ops::DerefMut for Expressions {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+#[derive(Logos, Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[logos(skip r"[, \t\n\f]+")]
 pub enum ParsedExpression {
     #[regex(r"[-./\w]+\s+in\s+\([-.\w\s,]+\)", |lex| parse_set(lex.slice()))]
@@ -90,6 +133,13 @@ pub enum ParsedExpression {
     #[regex(r"[-./\w]+\s*==\s*[-.\w]+", |lex| parse_equality(lex.slice()))]
     #[regex(r"[-./\w]+\s*!=\s*[-.\w]+", |lex| parse_equality(lex.slice()))]
     Expression(Expression),
+}
+
+impl fmt::Display for ParsedExpression {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let ParsedExpression::Expression(e) = self;
+        write!(f, "{}", e)
+    }
 }
 
 impl TryFrom<String> for Expressions {

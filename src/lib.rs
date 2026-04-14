@@ -113,21 +113,6 @@ impl fmt::Display for Expressions {
     }
 }
 
-impl std::ops::Deref for Expressions {
-    type Target = Vec<ParsedExpression>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[cfg(feature = "deref_mut")]
-impl std::ops::DerefMut for Expressions {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
 #[derive(Logos, Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[logos(skip r"[, \t\n\f]+")]
 pub enum ParsedExpression {

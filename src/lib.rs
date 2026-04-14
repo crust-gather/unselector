@@ -102,8 +102,14 @@ impl IntoIterator for Expressions {
 
 impl fmt::Display for Expressions {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let exprs: Vec<String> = self.0.iter().map(|e| e.to_string()).collect();
-        write!(f, "{}", exprs.join(","))
+        let mut iter = self.0.iter();
+        if let Some(first) = iter.next() {
+            write!(f, "{}", first)?;
+            for expr in iter {
+                write!(f, ",{}", expr)?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -137,8 +143,9 @@ pub enum ParsedExpression {
 
 impl fmt::Display for ParsedExpression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let ParsedExpression::Expression(e) = self;
-        write!(f, "{}", e)
+        match self {
+            ParsedExpression::Expression(e) => write!(f, "{}", e),
+        }
     }
 }
 

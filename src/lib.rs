@@ -60,6 +60,14 @@ impl IntoIterator for Expression {
     }
 }
 
+#[cfg(feature = "kube-rs")]
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(&kube::core::Expression::from(self.clone()), f)
+    }
+}
+
+#[cfg(not(feature = "kube-rs"))]
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

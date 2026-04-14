@@ -95,7 +95,7 @@ pub enum ParseError {
     StringParse(String, Span),
 }
 
-type Result<T> = std::result::Result<T, ParseError>;
+pub type Result<T> = std::result::Result<T, ParseError>;
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Expressions(Vec<ParsedExpression>);
@@ -141,11 +141,11 @@ impl fmt::Display for ParsedExpression {
     }
 }
 
-impl TryFrom<String> for Expressions {
+impl TryFrom<&str> for Expressions {
     type Error = ParseError;
 
-    fn try_from(selector: String) -> Result<Self> {
-        let mut lexer = ParsedExpression::lexer(selector.as_str());
+    fn try_from(selector: &str) -> Result<Self> {
+        let mut lexer = ParsedExpression::lexer(selector);
         let mut expressions = vec![];
         while let Some(value) = parse_expression(&mut lexer)? {
             expressions.push(value);
